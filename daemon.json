@@ -1,7 +1,13 @@
 {
   "debug": false,
   "experimental": false,
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "insecure-registries": ["localhost:5000"],
-  "registry-mirrors": ["https://dockerhub.azk8s.cn"]
+  "exec-opts": [
+    "native.cgroupdriver=systemd"
+  ],
+  "insecure-registries": [
+    "localhost:5000"
+  ],
+  "registry-mirrors": [
+    "https://dockerhub.azk8s.cn"
+  ]
 }
