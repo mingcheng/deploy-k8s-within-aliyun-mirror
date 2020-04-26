@@ -1,0 +1,8 @@
+deb https://mirrors.aliyun.com/debian/ buster main contrib non-free
+# deb-src https://mirrors.aliyun.com/debian/ buster main contrib non-free
+deb https://mirrors.aliyun.com/debian/ buster-updates main contrib non-free
+# deb-src https://mirrors.aliyun.com/debian/ buster-updates main contrib non-free
+deb https://mirrors.aliyun.com/debian/ buster-backports main contrib non-free
+# deb-src https://mirrors.aliyun.com/debian/ buster-backports main contrib non-free
+deb https://mirrors.aliyun.com/debian-security buster/updates main contrib non-free
+# deb-src https://mirrors.aliyun.com/debian-security buster/updates main contrib non-free
