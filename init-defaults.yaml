@@ -2,7 +2,7 @@ apiVersion: kubeadm.k8s.io/v1beta2
 bootstrapTokens:
   - groups:
       - system:bootstrappers:kubeadm:default-node-token
-    token: qf2faf.6g3xkibvxz4j1kcv
+    token: y6004c.qu7fclvg0in3kc8d
     ttl: 72h
     usages:
       - signing
@@ -13,7 +13,7 @@ localAPIEndpoint:
   bindPort: 6443
 nodeRegistration:
   criSocket: /var/run/dockershim.sock
-  name: hartog
+  name: dirk
   taints:
     - effect: NoSchedule
       key: node-role.kubernetes.io/master
@@ -23,6 +23,7 @@ apiServer:
 apiVersion: kubeadm.k8s.io/v1beta2
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
+controlPlaneEndpoint: dirk.service.consul
 dns:
   type: CoreDNS
 etcd:

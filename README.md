@@ -8,6 +8,7 @@
 - [初始化 Kubernetes](#初始化-kubernetes)
 - [安装网络模块](#安装网络模块)
 - [验证 Kubernetes](#验证-kubernetes)
+- [安装 Dashboard](#安装-dashboard)
 - [注意事项](#注意事项)
 - [参考链接](#参考链接)
 
@@ -151,16 +152,31 @@ kubectl apply -f nginx.yaml
 
 然后使用 `port-forward` 或者使用 NodePort 的方式查看端口是否正常返回数据，以便判断运行是否正常。
 
+## 安装 Dashboard
+
+首先使用 admin-role.yaml 文件生成 admin 权限的 token，`kubectl apply -f admin-role.yaml`。然后，获取 admin token，参考命令：
+
+```
+TOKEN_NAME=$(kubectl -n kube-system get secret | grep admin-token | awk '{print $1}')
+kubectl -n kube-system get secret $TOKEN_NAME -o jsonpath={.data.token} | base64 -d
+```
+
+安装 Dashboard，具体参见。项目中有 `dashboard.yaml` 可以供参考：
+
+https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+
+接下来，使用先前生成的 `admin-role.yaml` 生成的 `token` 即可登录。
+
 ## 注意事项
 
 已知问题：使用 apt 阿里云源安装的 K8S 比较新，目前为 1.18 版本，这个版本和 Istio 1.5.2 有冲突，需要等待版本更新才能正常安装。详见：https://github.com/istio/istio/issues/22215#issuecomment-599665040
 
 ## 参考链接
 
-* http://ljchen.net/2018/10/23/%E5%9F%BA%E4%BA%8E%E9%98%BF%E9%87%8C%E4%BA%91%E9%95%9C%E5%83%8F%E7%AB%99%E5%AE%89%E8%A3%85kubernetes/
-* https://github.com/kubernetes/kubernetes/issues/56038
-* https://pkg.go.dev/k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1beta2?tab=doc
-* https://cloud.tencent.com/developer/article/1482739
-* https://juejin.im/post/5dde7e4be51d4505f45f2495
-* https://juejin.im/post/5dde7e4be51d4505f45f2495
-* https://www.lijiaocn.com/%E9%A1%B9%E7%9B%AE/2017/04/11/calico-usage.html
+- http://ljchen.net/2018/10/23/%E5%9F%BA%E4%BA%8E%E9%98%BF%E9%87%8C%E4%BA%91%E9%95%9C%E5%83%8F%E7%AB%99%E5%AE%89%E8%A3%85kubernetes/
+- https://github.com/kubernetes/kubernetes/issues/56038
+- https://pkg.go.dev/k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1beta2?tab=doc
+- https://cloud.tencent.com/developer/article/1482739
+- https://juejin.im/post/5dde7e4be51d4505f45f2495
+- https://juejin.im/post/5dde7e4be51d4505f45f2495
+- https://www.lijiaocn.com/%E9%A1%B9%E7%9B%AE/2017/04/11/calico-usage.html
