@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: network-multitool
+  name: network-multitool
+spec:
+  selector:
+    matchLabels:
+      name: network-multitool
+  template:
+    metadata:
+      labels:
+        name: network-multitool
+    spec:
+      tolerations:
+        # this toleration is to have the daemonset runnable on master nodes
+        # remove it if your masters can't run pods
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      containers:
+        - image: praqma/network-multitool:alpine-3.12
+          name: ping-taobao
+          command: ["sh", "-c", "ping www.taobao.com"]
+        - image: praqma/network-multitool:alpine-3.12
+          name: ping-kubedef
+          command: ["sh", "-c", "ping kubernetes.default"]
+        - image: gcr.io/kubernetes-e2e-test-images/dnsutils:1.3
+          name: dnsutils
+          command: ["sh", "-c", "nslookup kubernetes.default && sleep 60"]
+      securityContext:
+        capabilities:
+          add:
+            - "NET_ADMIN"
+            - "NET_RAW"
+      # hostNetwork: trues
+      # dnsPolicy: ClusterFirst
+      restartPolicy: Always

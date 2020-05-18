@@ -1,0 +1,38 @@
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 0.0.0.0
+  bindPort: 6443
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+apiServer:
+  timeoutForControlPlane: 4m0s
+  certSANs:
+    - inggarda.service.consul
+    - 192.168.1.201
+    - 192.168.1.202
+    - 192.168.1.203
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+kubernetesVersion: stable
+#kubernetesVersion: latest
+networking:
+  podSubnet: 10.244.0.0/16
+  # serviceSubnet: 10.96.0.0/16
+  # dnsDomain: cluster.local
+controlPlaneEndpoint: inggarda.service.consul
+#controlPlaneEndpoint: 192.168.1.201
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+# kubelet specific options here
+maxPods: 256
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+# kube-proxy specific options here
+mode: "ipvs"
+ipvs:
+  strictARP: true
