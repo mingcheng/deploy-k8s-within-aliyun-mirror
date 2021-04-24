@@ -4,7 +4,7 @@
 
 - [更新记录](#更新记录)
 - [Linux 发行版的镜像源](#linux-发行版的镜像源)
-  - [APT Based](#apt-based)
+  - [基于 APT 的发行版](#基于-apt-的发行版)
   - [openSUSE](#opensuse)
 - [系统配置](#系统配置)
 - [容器运行时配置](#容器运行时配置)
@@ -30,12 +30,18 @@
 
 ## 更新记录
 
-`20210106` 由于 K8s 逐渐的将 Docker 与运行时拆分，因此部署的时候考虑到这个因素，所以使用了尝试性质的 CRI-O 运行时，详细见对应的章节
-`20200212` 初始化版本
+`20210424`
+rebase 了部分的提交记录，并同时更新配置文件到 K8S v1.21
+
+`20210106`
+由于 K8S 逐渐的将 Docker 与运行时拆分，因此部署的时候考虑到这个因素，所以使用了尝试性质的 CRI-O 运行时，详细见对应的章节
+
+`20200212`
+初始化版本
 
 ## Linux 发行版的镜像源
 
-### APT Based
+### 基于 APT 的发行版
 
 使用 Debian 以及其他的发行版，例如 CentOS 等都可以找到对应的软件镜像源。
 
@@ -43,7 +49,7 @@
 
 然后添加 `kubernetes.list` 文件到路径 `/etc/apt/sources.list.d/kubernetes.list` 。
 
-然后更新源 `apt update -y && apt upgrade -y`，安装使用详细的可以参考阿里云的介绍，由于上面已经加入了阿里云的 K8s 源，因此直接安装即可：
+然后更新源 `apt update -y && apt upgrade -y`，安装使用详细的可以参考阿里云的介绍，由于上面已经加入了阿里云的 K8S 源，因此直接安装即可：
 
 ```bash
 apt-get update -y && apt-get install -y apt-transport-https gnupg
@@ -51,11 +57,11 @@ curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -
 apt-get install -y kubelet kubeadm kubectl
 ```
 
-注意，阿里云镜像源提供的 K8s 命令都比较新，因此如果需要指定版本（例如 1.18）则使用 apt 对应的命令。
+注意，阿里云镜像源提供的 K8S 命令都比较新，因此如果需要指定版本（例如 1.18）则使用 apt 对应的命令。
 
 ### openSUSE
 
-2020 年后，统一使用 openSUSE 作为物理机以及虚拟机的运行镜像系统，其自带了 K8s 的软件源（Leap 可能会较老旧），直接使用 zypper 安装即可：
+2020 年后，统一使用 openSUSE 作为物理机以及虚拟机的运行镜像系统，其自带了 K8S 的软件源（Leap 可能会较老旧），直接使用 zypper 安装即可：
 
 ```
 zypper install kubernetes1.18-kubeadm kubernetes1.18-kubelet kubernetes1.18-controller-manager
@@ -164,7 +170,7 @@ K8S 的网络模块有很多可以选择，普遍使用 Flannel 比较多，这�
 先查看 CoreDNS 的运行情况：
 
 ```
-for p in $(kubectl get pods --namespace=kube-system -l k8s-app=kube-dns -o name); do kubectl logs --namespace=kube-system $p; done
+for p in $(kubectl get pods --namespace=kube-system -l K8S-app=kube-dns -o name); do kubectl logs --namespace=kube-system $p; done
 ```
 
 如果没有报错，则移除 taint 以便在 kube-system 这个 namespace 上部署相关的工具 Pod 。
@@ -224,9 +230,6 @@ https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
 ### 找回 join 命令
 
 如果忘记了 join 命令，可以使用 `kubeadm token create --print-join-command` 命令加入节点。如果忘记控制面的命令，则比较麻烦一点，先重置 certificate-key：
-
-kubeadm join 172.16.1.91:6443 --token scpw1o.lzx9m5549f5qgz7n --discovery-token-ca-cert-hash sha256:b173413a6614b07a59d5eedb4726040bf3b199ac612c9483c027e8be026ff991 --control-plane \
---certificate-key 2d398d18be6c71a883a5ee26f07470d886fd8c5c3637e21e8b88f02f40dc1841
 
 ```
 $certificate-key = kubeadm init phase upload-certs --upload-certs
