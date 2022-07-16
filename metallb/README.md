@@ -12,3 +12,8 @@ kubectl create secret generic -n metallb-system memberlist --from-literal=secret
 3. apply namespace.yaml 以及 metallb.yaml 文件，完毕。
 
 验证可以使用 `example/hello.yaml` 文件，然后查看 80 端口是否畅通。
+
+```
+helm repo add metallb https://metallb.github.io/metallb
+helm install metallb metallb/metallb -f values.yaml
+```
