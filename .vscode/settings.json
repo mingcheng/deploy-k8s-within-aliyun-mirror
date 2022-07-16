@@ -1,0 +1,18 @@
+{
+  "workbench.colorTheme": "Quiet Light",
+  "files.associations": {
+    "config": "ssh_config"
+  },
+  "editor.fontFamily": "'Sarasa Fixed SC', 'Sarasa Mono SC'",
+  "editor.fontSize": 14,
+  "editor.tabSize": 2,
+  "debug.console.fontSize": 12,
+  "editor.trimAutoWhitespace": true,
+  "files.trimTrailingWhitespace": true,
+  "[markdown]": {
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.lineNumbers": "off",
+    "editor.wordWrapColumn": 160,
+    "editor.fontSize": 16
+  },
+}
