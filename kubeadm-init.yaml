@@ -1,7 +1,7 @@
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
 localAPIEndpoint:
-  advertiseAddress: 192.168.1.202
+  advertiseAddress: 10.0.10.205
   bindPort: 6443
 ---
 apiVersion: kubeadm.k8s.io/v1beta2
@@ -9,17 +9,17 @@ kind: ClusterConfiguration
 apiServer:
   timeoutForControlPlane: 4m0s
   certSANs:
-    - 192.168.1.202
+    - 10.0.10.205
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
-# imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
 kubernetesVersion: stable
 #kubernetesVersion: latest
 networking:
-  podSubnet: 10.244.0.0/16
+  podSubnet: 172.16.0.0/16
   # serviceSubnet: 10.96.0.0/16
   # dnsDomain: cluster.local
-controlPlaneEndpoint: 192.168.1.202
+controlPlaneEndpoint: 10.0.10.205
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration

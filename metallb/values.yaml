@@ -1,0 +1,16 @@
+###
+# File: values.yaml
+# Author: Ming Cheng<mingcheng@outlook.com>
+#
+# Created Date: Tuesday, July 5th 2022, 2:16:49 pm
+# Last Modified: Tuesday, July 5th 2022, 3:31:03 pm
+#
+# http://www.opensource.org/licenses/MIT
+###
+
+configInline:
+  address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+        - 192.168.0.210-192.168.0.220
