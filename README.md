@@ -1,26 +1,27 @@
 # 使用阿里云镜像快速部署 Kubernetes 集群
 
-<!-- TOC -->
+<!-- TOC depthfrom:2 -->
 
-- [更新记录](#更新记录)
-- [Linux 发行版的镜像源](#linux-发行版的镜像源)
-  - [基于 APT 的发行版](#基于-apt-的发行版)
+- [更新记录](#%E6%9B%B4%E6%96%B0%E8%AE%B0%E5%BD%95)
+- [Linux 发行版的镜像源](#linux-%E5%8F%91%E8%A1%8C%E7%89%88%E7%9A%84%E9%95%9C%E5%83%8F%E6%BA%90)
+  - [基于 APT 的发行版](#%E5%9F%BA%E4%BA%8E-apt-%E7%9A%84%E5%8F%91%E8%A1%8C%E7%89%88)
   - [openSUSE](#opensuse)
-- [系统配置](#系统配置)
-- [容器运行时配置](#容器运行时配置)
-  - [Docker 配置](#docker-配置)
-  - [CRI-O 配置](#cri-o-配置)
-- [初始化 Kubernetes](#初始化-kubernetes)
-- [安装网络模块](#安装网络模块)
+- [系统配置](#%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE)
+- [容器运行时配置](#%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C%E6%97%B6%E9%85%8D%E7%BD%AE)
+  - [Docker 配置](#docker-%E9%85%8D%E7%BD%AE)
+  - [CRI-O 配置（可选）](#cri-o-%E9%85%8D%E7%BD%AE%E5%8F%AF%E9%80%89)
+- [初始化 Kubernetes](#%E5%88%9D%E5%A7%8B%E5%8C%96-kubernetes)
+- [安装网络模块](#%E5%AE%89%E8%A3%85%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9D%97)
   - [Flannel](#flannel)
-  - [Calico（废弃）](#calico废弃)
-- [验证 Kubernetes](#验证-kubernetes)
-- [安装 Dashboard](#安装-dashboard)
-- [安装 MetalLB](#安装-metallb)
-- [注意事项](#注意事项)
-  - [找回 join 命令](#找回-join-命令)
-  - [安全删除控制面节点](#安全删除控制面节点)
-- [参考链接](#参考链接)
+  - [Calico（废弃）](#calico%E5%BA%9F%E5%BC%83)
+- [验证 Kubernetes](#%E9%AA%8C%E8%AF%81-kubernetes)
+- [安装 Dashboard（可选）](#%E5%AE%89%E8%A3%85-dashboard%E5%8F%AF%E9%80%89)
+- [安装 KubeSphere（可选）](#%E5%AE%89%E8%A3%85-kubesphere%E5%8F%AF%E9%80%89)
+- [安装 MetalLB](#%E5%AE%89%E8%A3%85-metallb)
+- [注意事项](#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
+  - [找回 join 命令](#%E6%89%BE%E5%9B%9E-join-%E5%91%BD%E4%BB%A4)
+  - [安全删除控制面节点](#%E5%AE%89%E5%85%A8%E5%88%A0%E9%99%A4%E6%8E%A7%E5%88%B6%E9%9D%A2%E8%8A%82%E7%82%B9)
+- [参考链接](#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5)
 
 <!-- /TOC -->
 
@@ -29,6 +30,10 @@
 阿里云其实提供了很多 Linux 发行版以及 Docker、K8S 相关的镜像源，用于加快部署以及更新镜像以及软件包。下面，简单说明下使用的步骤，以便可以一通百通。
 
 ## 更新记录
+
+`20220716`
+
+更新的部分组件的版本号，同时配置文件更新到了 v1.23，补充 Debian/Ubnut 相关的配置说明细则
 
 `20210424`
 rebase 了部分的提交记录，并同时更新配置文件到 K8S v1.21
@@ -45,11 +50,13 @@ rebase 了部分的提交记录，并同时更新配置文件到 K8S v1.21
 
 使用 Debian 以及其他的发行版，例如 CentOS 等都可以找到对应的软件镜像源。
 
-例如，在 Debian 下可以直接使用 `source.list` 文件覆盖（记得备份）`/etc/apt/sources.list` 路径。
+例如，在 Debian 下可以直接使用 `source.list` 文件覆盖（记得备份）`/etc/apt/sources.list` 路径。然后添加 `kubernetes.list` 文件到路径 `/etc/apt/sources.list.d/kubernetes.list` 。
 
-然后添加 `kubernetes.list` 文件到路径 `/etc/apt/sources.list.d/kubernetes.list` 。
+```
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+```
 
-然后更新源 `apt update -y && apt upgrade -y`，安装使用详细的可以参考阿里云的介绍，由于上面已经加入了阿里云的 K8S 源，因此直接安装即可：
+更新源 `apt update -y && apt upgrade -y`，安装使用详细的可以参考阿里云的介绍，由于上面已经加入了阿里云的 K8S 源，因此直接安装即可：详细参见官方的文档：https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 
 ```bash
 apt-get update -y && apt-get install -y apt-transport-https gnupg
@@ -57,14 +64,21 @@ curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -
 apt-get install -y kubelet kubeadm kubectl
 ```
 
-注意，阿里云镜像源提供的 K8S 命令都比较新，因此如果需要指定版本（例如 1.18）则使用 apt 对应的命令。
+注意，阿里云镜像源提供的 K8S 命令都比较新，因此如果需要指定版本（例如 1.23）则使用 apt 对应的命令。
+
+```
+apt install kubelet=1.23.8-00 kubeadm=1.23.8-00 kubectl=1.23.8-00
+apt-cache policy kubelet
+apt-cache madison vim
+apt-mark hold kubelet kubeadm kubectl
+```
 
 ### openSUSE
 
 2020 年后，统一使用 openSUSE 作为物理机以及虚拟机的运行镜像系统，其自带了 K8S 的软件源（Leap 可能会较老旧），直接使用 zypper 安装即可：
 
 ```
-zypper install kubernetes1.18-kubeadm kubernetes1.18-kubelet kubernetes1.18-controller-manager
+zypper install kubernetes1.23-kubeadm kubernetes1.23-kubelet kubernetes1.23-controller-manager
 ```
 
 ## 系统配置
@@ -73,8 +87,10 @@ K8S 部署需要主机的包转发支持，所以记得开启相应的内核参�
 
 ```
 net.bridge.bridge-nf-call-iptables = 1
-net.bridge.bridge-nf-call-ip6tables = 1
 net.ipv4.ip_forward = 1
+
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
 ```
 
 下面的配置不是必须的，但是建议也一并开启，至于各项的内容和具体的参数值，详细建议的配置请参考 `sysctl.conf` 文件
@@ -83,9 +99,7 @@ net.ipv4.ip_forward = 1
 
 ### Docker 配置
 
-Debian 下 Docker 的安装和配置相对来说不会太复杂，软件包方面直接 `sudo apt install docker docker-compose` 即可。
-
-相应的配置可以参考 `daemon.json` 这个文件，主要需要注意的地方有
+Debian 下 Docker 的安装和配置相对来说不会太复杂，软件包方面直接 `sudo apt install docker docker-compose` 即可。相应的配置可以参考 `daemon.json` 这个文件，主要需要注意的地方有
 
 ```
 "registry-mirrors": ["https://<your-token>.mirror.aliyuncs.com"]
@@ -95,7 +109,7 @@ Debian 下 Docker 的安装和配置相对来说不会太复杂，软件包方�
 
 最后使用 `systemctl enable docker` 开机自启以及使用 `docker info` 查看安装是否正确。
 
-### CRI-O 配置
+### CRI-O 配置（可选）
 
 配置文件路径在 `/etc/containers/registries.conf` ，对应的内容可以参考 `registries.conf` 文件。详细参考：
 
@@ -204,7 +218,7 @@ kubectl apply -f nginx.yaml
 
 然后使用 `port-forward` 或者使用 NodePort 的方式查看端口是否正常返回数据，以便判断运行是否正常。
 
-## 安装 Dashboard
+## 安装 Dashboard（可选）
 
 首先使用 admin-role.yaml 文件生成 admin 权限的 token，`kubectl apply -f admin-role.yaml`。然后，获取 admin token，参考命令：
 
@@ -219,7 +233,11 @@ https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
 
 接下来，使用先前生成的 `admin-role.yaml` 生成的 `token` 即可登录。
 
-## 安装 MetalLB
+## 安装 KubeSphere（可选）
+
+KubeSphere 是国内青云推出的针对 K8s 比较易用的 Web 端，详细的可以参考其官方的安装文档 https://kubesphere.io/ 。这里主要说明的是，KubeSphere 相对安装的组件比较多，因此可能在配置不是很好的集群中，可能会影响应用的执行性能。
+
+## 安装 MetalLB（可选）
 
 具体的文件和配置在 metallb 目录中，没有使用 Ingress 是因为需求的缘故，更需要 TCP 端口的汇聚和输出，而七层应用这块交给业务配置。
 
@@ -260,3 +278,4 @@ etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd
 - https://juejin.im/post/5dde7e4be51d4505f45f2495
 - https://juejin.im/post/5dde7e4be51d4505f45f2495
 - https://www.lijiaocn.com/%E9%A1%B9%E7%9B%AE/2017/04/11/calico-usage.html
+- https://kubesphere.io/
