@@ -1,0 +1,23 @@
+###
+# File: openlb.yaml
+# Author: Ming Cheng<mingcheng@outlook.com>
+#
+# Created Date: Sunday, July 24th 2022, 8:51:52 pm
+# Last Modified: Sunday, July 24th 2022, 9:18:25 pm
+#
+# http://www.opensource.org/licenses/MIT
+###
+
+# ref: https://openelb.io/docs/getting-started/configuration/configure-ip-address-pools-using-eip/
+
+apiVersion: network.kubesphere.io/v1alpha2
+kind: Eip
+metadata:
+  name: eip-pool
+  annotations:
+    eip.openelb.kubesphere.io/is-default-eip: "true"
+spec:
+  address: 192.168.0.210-192.168.0.219
+  protocol: layer2
+  disable: false
+  interface: enp1s0

@@ -17,7 +17,10 @@
 - [验证 Kubernetes](#%E9%AA%8C%E8%AF%81-kubernetes)
 - [安装 Dashboard（可选）](#%E5%AE%89%E8%A3%85-dashboard%E5%8F%AF%E9%80%89)
 - [安装 KubeSphere（可选）](#%E5%AE%89%E8%A3%85-kubesphere%E5%8F%AF%E9%80%89)
-- [安装 MetalLB](#%E5%AE%89%E8%A3%85-metallb)
+- [安装 MetalLB（可选）](#%E5%AE%89%E8%A3%85-metallb%E5%8F%AF%E9%80%89)
+- [Installing OpenELB（可选）](#installing-openelb%E5%8F%AF%E9%80%89)
+- [附加信息](#%E9%99%84%E5%8A%A0%E4%BF%A1%E6%81%AF)
+  - [Install minikube](#install-minikube)
 - [注意事项](#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
   - [找回 join 命令](#%E6%89%BE%E5%9B%9E-join-%E5%91%BD%E4%BB%A4)
   - [安全删除控制面节点](#%E5%AE%89%E5%85%A8%E5%88%A0%E9%99%A4%E6%8E%A7%E5%88%B6%E9%9D%A2%E8%8A%82%E7%82%B9)
@@ -240,6 +243,26 @@ KubeSphere 是国内青云推出的针对 K8s 比较易用的 Web 端，详细�
 ## 安装 MetalLB（可选）
 
 具体的文件和配置在 metallb 目录中，没有使用 Ingress 是因为需求的缘故，更需要 TCP 端口的汇聚和输出，而七层应用这块交给业务配置。
+
+## Installing OpenELB（可选）
+
+Installing OpenELB is very simply, just according it's offical manual:
+
+```
+kubectl apply -f https://raw.githubusercontent.com/openelb/openelb/master/deploy/openelb.yaml
+```
+
+Then, configurion the OpenELB using the yaml file `layer2-eip.yaml`. Modify that files and apply it, that's it!
+
+## 附加信息
+
+### Install minikube
+
+minikube 官方的说明都已经包含了如何使用阿里云的镜像服务（这属于文化输出了）：
+
+```
+minikube start --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers --kubernetes-version='stable'
+```
 
 ## 注意事项
 

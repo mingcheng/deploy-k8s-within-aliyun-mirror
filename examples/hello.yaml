@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello
+  name: helloworld
 spec:
   selector:
     matchLabels:
-      app: hello
+      app: helloworld
   replicas: 2
   template:
     metadata:
       labels:
-        app: hello
+        app: helloworld
     spec:
       containers:
         - name: nginx
-          image: gcr.io/google-samples/hello-app:2.0
+          image: nginx:stable
           ports:
-            - containerPort: 8080
+            - containerPort: 80
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -25,19 +25,33 @@ spec:
             requests:
               cpu: 100m
               memory: 200Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
       restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: hello
+  name: helloworld
   labels:
-    app: hello
+    app: helloworld
+  # annotations:
+  #   lb.kubesphere.io/v1alpha1: openelb
+  #   protocol.openelb.kubesphere.io/v1alpha1: layer2
+  #   eip.openelb.kubesphere.io/v1alpha2: eip-pool
 spec:
-  # type: LoadBalancer
+  type: LoadBalancer
+  loadBalancerIP: 192.168.0.210
   ports:
     - port: 80
-      targetPort: 8080
+      targetPort: 80
       protocol: TCP
+  externalTrafficPolicy: Cluster
   selector:
-    app: hello
+    app: helloworld
