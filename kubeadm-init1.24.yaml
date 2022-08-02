@@ -1,0 +1,39 @@
+###
+# File: kubeadm-init1.24.yaml
+# Author: Ming Cheng<mingcheng@outlook.com>
+#
+# Created Date: Tuesday, August 2nd 2022, 4:26:56 pm
+# Last Modified: Tuesday, August 2nd 2022, 4:26:58 pm
+#
+# http://www.opensource.org/licenses/MIT
+###
+
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 172.16.0.200
+  bindPort: 6443
+nodeRegistration:
+  criSocket: unix:///run/cri-dockerd.sock
+  imagePullPolicy: Always
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+apiServer:
+  certSANs:
+    - 172.16.0.200
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controlPlaneEndpoint: 172.16.0.200:6443
+imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+kubernetesVersion: stable
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+maxPods: 512
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "ipvs"
+ipvs:
+  strictARP: true
