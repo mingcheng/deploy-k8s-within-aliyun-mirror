@@ -3,11 +3,11 @@
 <!-- TOC depthfrom:2 -->
 
 - [更新记录](#%E6%9B%B4%E6%96%B0%E8%AE%B0%E5%BD%95)
-- [Linux 发行版的镜像源](#linux-%E5%8F%91%E8%A1%8C%E7%89%88%E7%9A%84%E9%95%9C%E5%83%8F%E6%BA%90)
+- [发行版的镜像源](#%E5%8F%91%E8%A1%8C%E7%89%88%E7%9A%84%E9%95%9C%E5%83%8F%E6%BA%90)
   - [Debian/Ubuntu](#debianubuntu)
   - [openSUSE](#opensuse)
 - [系统配置](#%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE)
-- [容器运行时配置](#%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C%E6%97%B6%E9%85%8D%E7%BD%AE)
+- [运行时配置](#%E8%BF%90%E8%A1%8C%E6%97%B6%E9%85%8D%E7%BD%AE)
   - [containerd](#containerd)
   - [Docker 配置](#docker-%E9%85%8D%E7%BD%AE)
     - [针对 1.24 及以后版本](#%E9%92%88%E5%AF%B9-124-%E5%8F%8A%E4%BB%A5%E5%90%8E%E7%89%88%E6%9C%AC)
@@ -17,10 +17,12 @@
   - [Flannel](#flannel)
   - [Calico](#calico)
 - [验证 Kubernetes](#%E9%AA%8C%E8%AF%81-kubernetes)
-- [安装 Dashboard（可选）](#%E5%AE%89%E8%A3%85-dashboard%E5%8F%AF%E9%80%89)
-- [安装 KubeSphere（可选）](#%E5%AE%89%E8%A3%85-kubesphere%E5%8F%AF%E9%80%89)
-- [安装 MetalLB（可选）](#%E5%AE%89%E8%A3%85-metallb%E5%8F%AF%E9%80%89)
-- [部署 OpenELB（可选）](#%E9%83%A8%E7%BD%B2-openelb%E5%8F%AF%E9%80%89)
+- [安装组件](#%E5%AE%89%E8%A3%85%E7%BB%84%E4%BB%B6)
+  - [安装 Metrics Server（可选）](#%E5%AE%89%E8%A3%85-metrics-server%E5%8F%AF%E9%80%89)
+  - [Dashboard](#dashboard)
+  - [安装 KubeSphere（可选）](#%E5%AE%89%E8%A3%85-kubesphere%E5%8F%AF%E9%80%89)
+  - [安装 MetalLB（可选）](#%E5%AE%89%E8%A3%85-metallb%E5%8F%AF%E9%80%89)
+  - [部署 OpenELB（可选）](#%E9%83%A8%E7%BD%B2-openelb%E5%8F%AF%E9%80%89)
 - [附加信息](#%E9%99%84%E5%8A%A0%E4%BF%A1%E6%81%AF)
   - [Install minikube](#install-minikube)
 - [注意事项](#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
@@ -53,7 +55,7 @@ rebase 了部分的提交记录，并同时更新配置文件到 K8S v1.21
 `20200212`
 初始化版本
 
-## Linux 发行版的镜像源
+## 发行版的镜像源
 
 ### Debian/Ubuntu
 
@@ -106,7 +108,7 @@ vm.swappiness = 0
 
 下面的配置不是必须的，但是建议也一并开启，至于各项的内容和具体的参数值，详细建议的配置请参考 `sysctl.conf` 文件
 
-## 容器运行时配置
+## 运行时配置
 
 ### containerd
 
@@ -283,7 +285,29 @@ kubectl apply -f examples/nginx.yaml
 
 然后使用 `port-forward` 或者使用 NodePort 的方式查看端口是否正常返回数据，以便判断运行是否正常。
 
-## 安装 Dashboard（可选）
+## 安装组件
+
+基本的集群安装好以后，可能需要安装各种的支持组件，建议以下内容根据自身的需要和具体情况去酌情考虑。
+
+### 安装 Metrics Server（可选）
+
+具体的安装信息可以参见官网：https://github.com/kubernetes-sigs/metrics-server ，同时需要做些更改。将 Server 的启动参数修改为内部，同时不需要 https 验证：
+
+```yamml
+metadata:
+  labels:
+    k8s-app: metrics-server
+spec:
+  containers:
+  - args:
+    // ...
+    - --kubelet-preferred-address-types=InternalIP
+    - --kubelet-insecure-tls
+```
+
+具体请参见 `metrics-server.yaml` 这个文件。
+
+### Dashboard
 
 首先使用 admin-role.yaml 文件生成 admin 权限的 token，`kubectl apply -f admin-role.yaml`。然后，获取 admin token，参考命令：
 
@@ -298,15 +322,15 @@ https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
 
 接下来，使用先前生成的 `admin-role.yaml` 生成的 `token` 即可登录。
 
-## 安装 KubeSphere（可选）
+### 安装 KubeSphere（可选）
 
 KubeSphere 是国内青云推出的针对 K8s 比较易用的 Web 端，详细的可以参考其官方的安装文档 https://kubesphere.io/ 。这里主要说明的是，KubeSphere 相对安装的组件比较多，因此可能在配置不是很好的集群中，可能会影响应用的执行性能。
 
-## 安装 MetalLB（可选）
+### 安装 MetalLB（可选）
 
 具体的文件和配置在 metallb 目录中，没有使用 Ingress 是因为需求的缘故，更需要 TCP 端口的汇聚和输出，而七层应用这块交给业务配置。
 
-## 部署 OpenELB（可选）
+### 部署 OpenELB（可选）
 
 详细可以参考文档 https://openelb.io/docs/getting-started/installation/install-openelb-on-kubernetes/ ，使用 Helm 部署方式：
 
@@ -333,8 +357,6 @@ spec:
 ```
 
 然后，对应的 Pod 验证无误以后执行 `kubectl apply -f openelb/server.yaml` 更新部署原先部署的 nginx deployment 文件看看对应接口参数有无暴露出来。
-
-使用
 
 ## 附加信息
 
