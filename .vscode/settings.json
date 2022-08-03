@@ -1,9 +1,10 @@
 {
   "workbench.colorTheme": "Quiet Light",
   "files.associations": {
-    "config": "ssh_config"
+    "config": "ssh_config",
+    "*.yml": "yaml",
+    "*.yaml": "yaml"
   },
-  "editor.fontFamily": "'Sarasa Fixed SC', 'Sarasa Mono SC'",
   "editor.fontSize": 14,
   "editor.tabSize": 2,
   "debug.console.fontSize": 12,

@@ -4,27 +4,30 @@
 
 - [更新记录](#%E6%9B%B4%E6%96%B0%E8%AE%B0%E5%BD%95)
 - [Linux 发行版的镜像源](#linux-%E5%8F%91%E8%A1%8C%E7%89%88%E7%9A%84%E9%95%9C%E5%83%8F%E6%BA%90)
-  - [基于 APT 的发行版](#%E5%9F%BA%E4%BA%8E-apt-%E7%9A%84%E5%8F%91%E8%A1%8C%E7%89%88)
+  - [Debian/Ubuntu](#debianubuntu)
   - [openSUSE](#opensuse)
 - [系统配置](#%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE)
 - [容器运行时配置](#%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C%E6%97%B6%E9%85%8D%E7%BD%AE)
+  - [containerd](#containerd)
   - [Docker 配置](#docker-%E9%85%8D%E7%BD%AE)
-    - [针对 Kubernetes 1.24 及以后版本](#%E9%92%88%E5%AF%B9-kubernetes-124-%E5%8F%8A%E4%BB%A5%E5%90%8E%E7%89%88%E6%9C%AC)
+    - [针对 1.24 及以后版本](#%E9%92%88%E5%AF%B9-124-%E5%8F%8A%E4%BB%A5%E5%90%8E%E7%89%88%E6%9C%AC)
   - [CRI-O 配置（可选）](#cri-o-%E9%85%8D%E7%BD%AE%E5%8F%AF%E9%80%89)
 - [初始化 Kubernetes](#%E5%88%9D%E5%A7%8B%E5%8C%96-kubernetes)
 - [安装网络模块](#%E5%AE%89%E8%A3%85%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9D%97)
   - [Flannel](#flannel)
-  - [Calico（废弃）](#calico%E5%BA%9F%E5%BC%83)
+  - [Calico](#calico)
 - [验证 Kubernetes](#%E9%AA%8C%E8%AF%81-kubernetes)
 - [安装 Dashboard（可选）](#%E5%AE%89%E8%A3%85-dashboard%E5%8F%AF%E9%80%89)
 - [安装 KubeSphere（可选）](#%E5%AE%89%E8%A3%85-kubesphere%E5%8F%AF%E9%80%89)
 - [安装 MetalLB（可选）](#%E5%AE%89%E8%A3%85-metallb%E5%8F%AF%E9%80%89)
-- [Installing OpenELB（可选）](#installing-openelb%E5%8F%AF%E9%80%89)
+- [部署 OpenELB（可选）](#%E9%83%A8%E7%BD%B2-openelb%E5%8F%AF%E9%80%89)
 - [附加信息](#%E9%99%84%E5%8A%A0%E4%BF%A1%E6%81%AF)
   - [Install minikube](#install-minikube)
 - [注意事项](#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
+  - [kubeadm reset](#kubeadm-reset)
+  - [istio 兼容性问题](#istio-%E5%85%BC%E5%AE%B9%E6%80%A7%E9%97%AE%E9%A2%98)
   - [找回 join 命令](#%E6%89%BE%E5%9B%9E-join-%E5%91%BD%E4%BB%A4)
-  - [安全删除控制面节点](#%E5%AE%89%E5%85%A8%E5%88%A0%E9%99%A4%E6%8E%A7%E5%88%B6%E9%9D%A2%E8%8A%82%E7%82%B9)
+  - [安全删除控制面](#%E5%AE%89%E5%85%A8%E5%88%A0%E9%99%A4%E6%8E%A7%E5%88%B6%E9%9D%A2)
 - [参考链接](#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5)
 
 <!-- /TOC -->
@@ -35,9 +38,11 @@
 
 ## 更新记录
 
-`20220716`
+`20220802`
+增加针对 1.24 部署的说明
 
-更新的部分组件的版本号，同时配置文件更新到了 v1.23，补充 Debian/Ubnut 相关的配置说明细则
+`20220716`
+更新的部分组件的版本号，同时配置文件更新到了 v1.23，补充 Debian/Ubuntu 相关的配置说明细则
 
 `20210424`
 rebase 了部分的提交记录，并同时更新配置文件到 K8S v1.21
@@ -50,11 +55,9 @@ rebase 了部分的提交记录，并同时更新配置文件到 K8S v1.21
 
 ## Linux 发行版的镜像源
 
-### 基于 APT 的发行版
+### Debian/Ubuntu
 
-使用 Debian 以及其他的发行版，例如 CentOS 等都可以找到对应的软件镜像源。
-
-例如，在 Debian 下可以直接使用 `source.list` 文件覆盖（记得备份）`/etc/apt/sources.list` 路径。然后添加 `kubernetes.list` 文件到路径 `/etc/apt/sources.list.d/kubernetes.list` 。
+使用 Debian 以及其他的发行版，例如 CentOS 等都可以找到对应的软件镜像源。例如，在 Debian 下可以直接使用 `source.list` 文件覆盖（记得备份）`/etc/apt/sources.list` 路径。然后添加 `kubernetes.list` 文件到路径 `/etc/apt/sources.list.d/kubernetes.list` 。
 
 ```
 sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
@@ -77,6 +80,8 @@ apt-cache madison vim
 apt-mark hold kubelet kubeadm kubectl
 ```
 
+同时，也可以安装对应的网络组件，例如 `apt install ipvsadm` 。
+
 ### openSUSE
 
 使用 openSUSE 作为物理机以及虚拟机的运行镜像系统，其自带了 K8S 的软件源（Leap 可能会较老旧），直接使用 zypper 安装即可：
@@ -90,16 +95,37 @@ zypper install kubernetes1.23-kubeadm kubernetes1.23-kubelet kubernetes1.23-cont
 K8S 部署需要主机的包转发支持，所以记得开启相应的内核参数，修改 `/etc/sysctl.conf` 文件，添加下面主要的配置：
 
 ```
+net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
-net.ipv4.ip_forward = 1
 
-net.ipv6.conf.all.disable_ipv6 = 1
-net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv4.ip_forward = 1
+net.ipv6.conf.all.forwarding = ◊1
+
+vm.swappiness = 0
 ```
 
 下面的配置不是必须的，但是建议也一并开启，至于各项的内容和具体的参数值，详细建议的配置请参考 `sysctl.conf` 文件
 
 ## 容器运行时配置
+
+### containerd
+
+1.24 以后推荐使用 containerd 作为主要 CRI 运行环境。配置 containerd 其实很简单，默认的命令只需要 `containerd config default` 即可导出默认的配置。然后，需要注意的几个配置点有：
+
+```toml
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+  // ...
+  SystemdCgroup = true
+```
+
+然后更改 `kubeadmin-init1.24.yaml` 文件中对应的内容，更改为：
+
+```yaml
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+nodeRegistration:
+  criSocket: unix:///run/containerd/containerd.sock
+```
 
 ### Docker 配置
 
@@ -113,9 +139,12 @@ Debian 下 Docker 的安装和配置相对来说不会太复杂，软件包方�
 
 最后使用 `systemctl enable docker` 开机自启以及使用 `docker info` 查看安装是否正确。
 
-#### 针对 Kubernetes 1.24 及以后版本
+#### 针对 1.24 及以后版本
 
-Kubernetes 正式废除了针对 docker-shim 的直接支持，因此我们需要自行安装 cri 的中间层，然后再部署。使用 Github Mirantis 官方的即可，详细信息：https://github.com/Mirantis/cri-dockerd 。
+Kubernetes 正式废除了针对 docker-shim 的直接支持，因此我们需要自行安装 cri 的中间层，然后再部署。使用 Github Mirantis 官方的即可，详细信息：https://github.com/Mirantis/cri-dockerd ，以及参考：
+
+- https://www.mirantis.com/blog/how-to-install-cri-dockerd-and-migrate-nodes-from-dockershim
+- https://www.mirantis.com/blog/the-future-of-dockershim-is-cri-dockerd/
 
 根据官方的文档安装然后，查看使用 `sudo systemctl status cri-docker.service` 运行情况。
 
@@ -168,9 +197,15 @@ kubeadm init --upload-certs --config kubeadm-init.yaml
 kubeadm token create --print-join-command
 ```
 
-重新获得，via https://github.com/kubernetes/kubeadm/issues/659#issuecomment-357726502
+注意，如果是 1.24 的版本并且使用上述的 cri-dockerd 部署的话，需要额外的指定 cri socker 路径，如：
 
-然后，就可以使用 `kubectl get nodes -A` 以及 `kubectl get pod -A -o wide` 等命令查看 K8S 控制面集群的运行状态了。
+```
+kubeadm join <your-endpoint> --token <token> \
+	--discovery-token-ca-cert-hash <hash> \
+  --cri-socket unix:///var/run/cri-dockerd.sock
+```
+
+重新获得，via https://github.com/kubernetes/kubeadm/issues/659#issuecomment-357726502 然后，就可以使用 `kubectl get nodes -A` 以及 `kubectl get pod -A -o wide` 等命令查看 K8S 控制面集群的运行状态了。
 
 ## 安装网络模块
 
@@ -182,22 +217,28 @@ kubeadm token create --print-join-command
 
 即可安装，注意 quay.io 有可能存在国内无法拉取的情况，需要额外的注意。
 
-### Calico（废弃）
+### Calico
 
-_由于使用了一段时间也没有使用 Calio 的功能属性，因此切换回 Flannel 网络模块 by mingcheng 20200106_
+K8S 的网络模块有很多可以选择，普遍使用 Flannel 比较多，这里我个人使用 Calico 因为它有比较详细的权限控制以及客户端。默认情况下，Calico 使用 `192.168.0.0/24` 网段，但是上述的 `calico/custom-resources.yaml` 指定的 Pods 网段为 `10.95.0.0/16` 所以需要稍微更改下配置：
 
-K8S 的网络模块有很多可以选择，普遍使用 Flannel 比较多，这里我个人使用 Calico 因为它有比较详细的权限控制以及客户端。
-
-默认情况下，Calico 使用 `192.168.0.0/24` 网段，但是上述的 `init-default.yaml` 指定的 Pods 网段为 `10.100.0.1/24` 所以需要稍微更改下配置：
-
+```yaml
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+  # Configures Calico networking.
+  calicoNetwork:
+    # Note: The ipPools section cannot be modified post-install.
+    ipPools:
+      - blockSize: 26
+        cidr: 10.95.0.0/16
+        encapsulation: VXLANCrossSubnet
+        natOutgoing: Enabled
+        nodeSelector: all()
 ```
-- name: CALICO_IPV4POOL_CIDR
-  value: "10.100.0.1/24"
-```
 
-更详细的信息查看官方网站： https://www.projectcalico.org/
-
-直接使用 `kubectl apply -f calico.yaml` 即可安装网络模块，然后等待一段时间后查看各个 Pods 的运行情况。
+更详细的信息查看官方网站： https://www.projectcalico.org/ 直接使用 `kubectl apply -f calico/custom-resources.yaml` 即可安装网络模块，然后等待一段时间后查看各个 Pods 的运行情况。
 
 先查看 CoreDNS 的运行情况：
 
@@ -209,6 +250,12 @@ for p in $(kubectl get pods --namespace=kube-system -l K8S-app=kube-dns -o name)
 
 ```
 kubectl taint nodes --all node-role.kubernetes.io/master-
+```
+
+（1.24 版本以后，使用）
+
+```
+kubectl taint node --all node-role.kubernetes.io/master:NoSchedule-
 ```
 
 然后测试 DNS、网络时候正常，先部署 dnsutils 这个 Pod 到 kube-system 这个 namespce：
@@ -231,7 +278,7 @@ kubectl exec -it dnsutils -- nslookup kubernetes.default
 然后在各个 Node 上使用 kubeadm join 加入集群和部署 kubelet 相关的进程。这里有个简单的使用 nginx 测试集群的情况。
 
 ```
-kubectl apply -f nginx.yaml
+kubectl apply -f examples/nginx.yaml
 ```
 
 然后使用 `port-forward` 或者使用 NodePort 的方式查看端口是否正常返回数据，以便判断运行是否正常。
@@ -259,15 +306,35 @@ KubeSphere 是国内青云推出的针对 K8s 比较易用的 Web 端，详细�
 
 具体的文件和配置在 metallb 目录中，没有使用 Ingress 是因为需求的缘故，更需要 TCP 端口的汇聚和输出，而七层应用这块交给业务配置。
 
-## Installing OpenELB（可选）
+## 部署 OpenELB（可选）
 
-Installing OpenELB is very simply, just according it's offical manual:
+详细可以参考文档 https://openelb.io/docs/getting-started/installation/install-openelb-on-kubernetes/ ，使用 Helm 部署方式：
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/openelb/openelb/master/deploy/openelb.yaml
+helm repo add test https://charts.kubesphere.io/test
+helm repo update
+helm install openelb test/openelb
 ```
 
-Then, configurion the OpenELB using the yaml file `layer2-eip.yaml`. Modify that files and apply it, that's it!
+或者直接使用 `kubectl apply -f openelb/openelb.yaml` 命令，然后针对具体的本地配置 EIP：
+
+```yaml
+apiVersion: network.kubesphere.io/v1alpha2
+kind: Eip
+metadata:
+  name: eip-pool
+  annotations:
+    eip.openelb.kubesphere.io/is-default-eip: "true"
+spec:
+  address: 172.16.0.90-172.16.0.99
+  protocol: layer2
+  disable: false
+  interface: enp1s0
+```
+
+然后，对应的 Pod 验证无误以后执行 `kubectl apply -f openelb/server.yaml` 更新部署原先部署的 nginx deployment 文件看看对应接口参数有无暴露出来。
+
+使用
 
 ## 附加信息
 
@@ -280,6 +347,16 @@ minikube start --image-repository=registry.cn-hangzhou.aliyuncs.com/google_conta
 ```
 
 ## 注意事项
+
+### kubeadm reset
+
+一般来说，reset 能够初始化大部分的配置，同时能够尽可能的恢复原有的状态，如果使用多个 cri 那么指定下对应的 cri 参数：
+
+```
+kubeadm reset -f --cri-socket unix:///run/containerd/containerd.sock
+```
+
+### istio 兼容性问题
 
 <del>使用 apt 阿里云源安装的 K8S 比较新，目前为 1.18 版本，这个版本和 Istio 1.5.2 有冲突，需要等待版本更新才能正常安装。详见：https://github.com/istio/istio/issues/22215#issuecomment-599665040</del> 已解决
 
@@ -295,9 +372,15 @@ $(kubeadm token create --print-join-command) \
 --certificate-key $certificate-key
 ```
 
-然后组合命令，再到节点上执行即可。
+然后组合命令，再到节点上执行即可。注意，在某些版本下如果没有指定 cri ，那么还是会报错了，提供对应的参数即可，例如：
 
-### 安全删除控制面节点
+```
+kubeadm join <your-endpoint>:6443 --token <token> \
+	--discovery-token-ca-cert-hash <hash> \
+  --cri-socket unix:///var/run/cri-dockerd.sock
+```
+
+### 安全删除控制面
 
 注意，如果只是 `kubectl delete node` 只会删除节点，但比不会让其他的 etcd 退出节点，因此需要在其他的 etcd 节点中手工执行删除命令，在对应的 Pod 中执行：
 

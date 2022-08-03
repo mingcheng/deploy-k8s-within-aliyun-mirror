@@ -3,7 +3,7 @@
 # Author: Ming Cheng<mingcheng@outlook.com>
 #
 # Created Date: Tuesday, August 2nd 2022, 4:26:56 pm
-# Last Modified: Tuesday, August 2nd 2022, 4:26:58 pm
+# Last Modified: Wednesday, August 3rd 2022, 1:28:50 pm
 #
 # http://www.opensource.org/licenses/MIT
 ###
@@ -14,19 +14,19 @@ localAPIEndpoint:
   advertiseAddress: 172.16.0.200
   bindPort: 6443
 nodeRegistration:
-  criSocket: unix:///run/cri-dockerd.sock
+  # criSocket: unix:///run/cri-dockerd.sock
+  criSocket: unix:///run/containerd/containerd.sock
   imagePullPolicy: Always
 ---
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
-apiServer:
-  certSANs:
-    - 172.16.0.200
-certificatesDir: /etc/kubernetes/pki
-clusterName: kubernetes
 controlPlaneEndpoint: 172.16.0.200:6443
-imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+# imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+# kubernetesVersion: "v1.24.3"
+imageRepository: "k8s.gcr.io"
 kubernetesVersion: stable
+networking:
+  podSubnet: "10.244.0.0/24"
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration

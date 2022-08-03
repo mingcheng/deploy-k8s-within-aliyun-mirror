@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: network-multitool
+  name: network-multitool
+spec:
+  selector:
+    matchLabels:
+      name: network-multitool
+  template:
+    metadata:
+      labels:
+        name: network-multitool
+    spec:
+      # tolerations:
+        # this toleration is to have the daemonset runnable on master nodes
+        # remove it if your masters can't run pods
+        # - key: node-role.kubernetes.io/master
+        #   effect: NoSchedule
+      containers:
+        - name: network-multitool
+          image: wbitt/network-multitool
+          imagePullPolicy: Always
+      # hostNetwork: trues
+      restartPolicy: Always

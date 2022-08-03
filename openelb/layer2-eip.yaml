@@ -3,7 +3,7 @@
 # Author: Ming Cheng<mingcheng@outlook.com>
 #
 # Created Date: Sunday, July 24th 2022, 8:51:52 pm
-# Last Modified: Sunday, July 24th 2022, 9:18:25 pm
+# Last Modified: Wednesday, August 3rd 2022, 3:25:51 pm
 #
 # http://www.opensource.org/licenses/MIT
 ###
@@ -17,7 +17,7 @@ metadata:
   annotations:
     eip.openelb.kubesphere.io/is-default-eip: "true"
 spec:
-  address: 192.168.0.210-192.168.0.219
+  address: 172.16.0.90-172.16.0.99
   protocol: layer2
   disable: false
   interface: enp1s0

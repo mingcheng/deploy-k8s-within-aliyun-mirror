@@ -1,17 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: helloworld
+  name: nginx
 spec:
   selector:
     matchLabels:
-      app: helloworld
-  replicas: 2
+      app: nginx
+  replicas: 3
   template:
     metadata:
       labels:
-        app: helloworld
+        app: nginx
     spec:
+      tolerations:
+        # this toleration is to have the daemonset runnable on master nodes
+        # remove it if your masters can't run pods
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
       containers:
         - name: nginx
           image: nginx:stable
@@ -38,20 +43,19 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: helloworld
+  name: nginx
   labels:
-    app: helloworld
+    app: nginx
   # annotations:
   #   lb.kubesphere.io/v1alpha1: openelb
   #   protocol.openelb.kubesphere.io/v1alpha1: layer2
   #   eip.openelb.kubesphere.io/v1alpha2: eip-pool
 spec:
-  type: LoadBalancer
-  loadBalancerIP: 192.168.0.210
+  # type: ClusterIP
+  # loadBalancerIP: 192.168.0.210
   ports:
     - port: 80
       targetPort: 80
       protocol: TCP
-  externalTrafficPolicy: Cluster
   selector:
-    app: helloworld
+    app: nginx

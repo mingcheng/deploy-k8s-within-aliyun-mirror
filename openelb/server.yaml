@@ -1,0 +1,29 @@
+###
+# File: server.yaml
+# Author: Ming Cheng<mingcheng@outlook.com>
+#
+# Created Date: Wednesday, August 3rd 2022, 3:15:47 pm
+# Last Modified: Wednesday, August 3rd 2022, 3:18:16 pm
+#
+# http://www.opensource.org/licenses/MIT
+###
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+  annotations:
+    lb.kubesphere.io/v1alpha1: openelb
+    protocol.openelb.kubesphere.io/v1alpha1: layer2
+    eip.openelb.kubesphere.io/v1alpha2: eip-pool
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 172.16.0.99
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: nginx
