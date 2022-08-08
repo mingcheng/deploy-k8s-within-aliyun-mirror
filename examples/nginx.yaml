@@ -26,10 +26,10 @@ spec:
           resources:
             limits:
               cpu: 100m
-              memory: 200Mi
+              memory: 100Mi
             requests:
-              cpu: 100m
-              memory: 200Mi
+              cpu: 10m
+              memory: 50Mi
           livenessProbe:
             httpGet:
               path: /

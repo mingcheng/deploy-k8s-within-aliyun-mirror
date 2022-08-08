@@ -3,7 +3,7 @@
 # Author: Ming Cheng<mingcheng@outlook.com>
 #
 # Created Date: Sunday, July 24th 2022, 8:51:52 pm
-# Last Modified: Wednesday, August 3rd 2022, 3:25:51 pm
+# Last Modified: Monday, August 8th 2022, 12:17:05 pm
 #
 # http://www.opensource.org/licenses/MIT
 ###
@@ -20,4 +20,4 @@ spec:
   address: 172.16.0.90-172.16.0.99
   protocol: layer2
   disable: false
-  interface: enp1s0
+  interface: eth0

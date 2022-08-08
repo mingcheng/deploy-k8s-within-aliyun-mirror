@@ -14,7 +14,10 @@ spec:
         encapsulation: VXLANCrossSubnet
         natOutgoing: Enabled
         nodeSelector: all()
-
+    nodeAddressAutodetectionV4:
+      interface: eth0
+      # cidrs:
+      #   - "192.168.0.0/24"
 ---
 # This section configures the Calico API server.
 # For more information, see: https://projectcalico.docs.tigera.io/v3.23/reference/installation/api#operator.tigera.io/v1.APIServer
