@@ -27,6 +27,9 @@
   - [Install minikube](#install-minikube)
 - [注意事项](#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
   - [kubeadm reset](#kubeadm-reset)
+  - [集群从 1.23 升级到 1.24 的 Warning 的问题](#%E9%9B%86%E7%BE%A4%E4%BB%8E-123-%E5%8D%87%E7%BA%A7%E5%88%B0-124-%E7%9A%84-warning-%E7%9A%84%E9%97%AE%E9%A2%98)
+  - [SIGTERM doesn't kill containerd-shims](#sigterm-doesnt-kill-containerd-shims)
+  - [Calico Node 健康检查不通过](#calico-node-%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5%E4%B8%8D%E9%80%9A%E8%BF%87)
   - [istio 兼容性问题](#istio-%E5%85%BC%E5%AE%B9%E6%80%A7%E9%97%AE%E9%A2%98)
   - [找回 join 命令](#%E6%89%BE%E5%9B%9E-join-%E5%91%BD%E4%BB%A4)
   - [安全删除控制面](#%E5%AE%89%E5%85%A8%E5%88%A0%E9%99%A4%E6%8E%A7%E5%88%B6%E9%9D%A2)
@@ -39,6 +42,9 @@
 阿里云其实提供了很多 Linux 发行版以及 Docker、K8S 相关的镜像源，用于加快部署以及更新镜像以及软件包。下面，简单说明下使用的步骤，以便可以一通百通。
 
 ## 更新记录
+
+`20220809`
+增加针对 1.24 部署的补充说明，以及相关问题的应对方案
 
 `20220802`
 增加针对 1.24 部署的说明
@@ -64,6 +70,14 @@ rebase 了部分的提交记录，并同时更新配置文件到 K8S v1.21
 ```
 sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
 ```
+
+也可以参考直接下载国内的阿里云签名文件（不安全）：
+
+```
+curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -
+```
+
+详细 https://www.cnblogs.com/FengZeng666/p/15502138.html
 
 更新源 `apt update -y && apt upgrade -y`，安装使用详细的可以参考阿里云的介绍，由于上面已经加入了阿里云的 K8S 源，因此直接安装即可：详细参见官方的文档：https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 
@@ -128,6 +142,21 @@ kind: InitConfiguration
 nodeRegistration:
   criSocket: unix:///run/containerd/containerd.sock
 ```
+
+配置 containerd 的镜像源可以参考如下配置（使用阿里云的镜像源）：
+
+```toml
+[plugins]
+    [plugins."io.containerd.grpc.v1.cri".registry]
+      ...
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+        endpoint = ["https://xxxxxx.mirror.aliyuncs.com"]
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors."k8s.gcr.io"]
+        endpoint = ["registry.aliyuncs.com/google_containers"]
+```
+
+参考来源： https://www.cnblogs.com/dudu/p/16249465.html
 
 ### Docker 配置
 
@@ -377,6 +406,52 @@ minikube start --image-repository=registry.cn-hangzhou.aliyuncs.com/google_conta
 ```
 kubeadm reset -f --cri-socket unix:///run/containerd/containerd.sock
 ```
+
+### 集群从 1.23 升级到 1.24 的 Warning 的问题
+
+主要是没有配置 criSocket 的问题，如：
+
+```
+Usage of CRI endpoints without URL scheme is deprecated and can cause kubelet errors in the future.
+Automatically prepending scheme "unix" to the "criSocket" with value "/var/run/dockershim.sock".
+Please update your configuration!
+```
+
+根据提示 kubeadm 更新的时候加上配置即可，以下文件保存为 `config.yaml`
+
+```yaml
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+nodeRegistration:
+  criSocket: unix:///run/containerd/containerd.sock
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: JoinConfiguration
+nodeRegistration:
+  criSocket: unix:///run/containerd/containerd.sock
+```
+
+然后 `kubeadm upgrade apply --config config.yaml` 即可。
+
+### SIGTERM doesn't kill containerd-shims
+
+https://github.com/containerd/containerd/issues/386#issuecomment-304837687
+
+### Calico Node 健康检查不通过
+
+如果 Node 上存在多个网卡，或者网卡的名字不标准，可以使用显式的方式指定 Calico 根据网卡地址获取地址，例如
+
+```
+kubectl set env daemonset/calico-node -n calico-system IP_AUTODETECTION_METHOD=interface=eth0
+```
+
+注意，这里的示例是本机的网卡端口为 eth0，你也可以指定多个，例如：
+
+```
+kubectl set env daemonset/calico-node -n calico-system "IP_AUTODETECTION_METHOD=interface=eth.*|enp.*|bond.*|br.*"
+```
+
+具体参见 https://projectcalico.docs.tigera.io/networking/ip-autodetection
 
 ### istio 兼容性问题
 
