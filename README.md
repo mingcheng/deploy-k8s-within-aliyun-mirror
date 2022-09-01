@@ -17,14 +17,14 @@
   - [Flannel](#flannel)
   - [Calico](#calico)
 - [验证 Kubernetes](#%E9%AA%8C%E8%AF%81-kubernetes)
-- [安装组件](#%E5%AE%89%E8%A3%85%E7%BB%84%E4%BB%B6)
-  - [安装 Metrics Server（可选）](#%E5%AE%89%E8%A3%85-metrics-server%E5%8F%AF%E9%80%89)
+- [安装组件（可选）](#%E5%AE%89%E8%A3%85%E7%BB%84%E4%BB%B6%E5%8F%AF%E9%80%89)
+  - [Metrics Server](#metrics-server)
   - [Dashboard](#dashboard)
-  - [安装 KubeSphere（可选）](#%E5%AE%89%E8%A3%85-kubesphere%E5%8F%AF%E9%80%89)
-  - [安装 MetalLB（可选）](#%E5%AE%89%E8%A3%85-metallb%E5%8F%AF%E9%80%89)
-  - [部署 OpenELB（可选）](#%E9%83%A8%E7%BD%B2-openelb%E5%8F%AF%E9%80%89)
+  - [KubeSphere](#kubesphere)
+  - [MetalLB](#metallb)
+  - [OpenELB](#openelb)
 - [附加信息](#%E9%99%84%E5%8A%A0%E4%BF%A1%E6%81%AF)
-  - [Install minikube](#install-minikube)
+  - [Minikube](#minikube)
 - [注意事项](#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
   - [kubeadm reset](#kubeadm-reset)
   - [集群从 1.23 升级到 1.24 的 Warning 的问题](#%E9%9B%86%E7%BE%A4%E4%BB%8E-123-%E5%8D%87%E7%BA%A7%E5%88%B0-124-%E7%9A%84-warning-%E7%9A%84%E9%97%AE%E9%A2%98)
@@ -67,19 +67,19 @@ rebase 了部分的提交记录，并同时更新配置文件到 K8S v1.21
 
 使用 Debian 以及其他的发行版，例如 CentOS 等都可以找到对应的软件镜像源。例如，在 Debian 下可以直接使用 `source.list` 文件覆盖（记得备份）`/etc/apt/sources.list` 路径。然后添加 `kubernetes.list` 文件到路径 `/etc/apt/sources.list.d/kubernetes.list` 。
 
-```
+```bash
 sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
 ```
 
 也可以参考直接下载国内的阿里云签名文件（不安全）：
 
-```
+```bash
 curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -
 ```
 
-详细 https://www.cnblogs.com/FengZeng666/p/15502138.html
+详细 <https://www.cnblogs.com/FengZeng666/p/15502138.html>
 
-更新源 `apt update -y && apt upgrade -y`，安装使用详细的可以参考阿里云的介绍，由于上面已经加入了阿里云的 K8S 源，因此直接安装即可：详细参见官方的文档：https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+更新源 `apt update -y && apt upgrade -y`，安装使用详细的可以参考阿里云的介绍，由于上面已经加入了阿里云的 K8S 源，因此直接安装即可：详细参见官方的文档：<https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/>
 
 ```bash
 apt-get update -y && apt-get install -y apt-transport-https gnupg
@@ -89,7 +89,7 @@ apt-get install -y kubelet kubeadm kubectl
 
 注意，阿里云镜像源提供的 K8S 命令都比较新，因此如果需要指定版本（例如 1.23）则使用 apt 对应的命令。
 
-```
+```bash
 apt install kubelet=1.23.8-00 kubeadm=1.23.8-00 kubectl=1.23.8-00
 apt-cache policy kubelet
 apt-cache madison vim
@@ -102,7 +102,7 @@ apt-mark hold kubelet kubeadm kubectl
 
 使用 openSUSE 作为物理机以及虚拟机的运行镜像系统，其自带了 K8S 的软件源（Leap 可能会较老旧），直接使用 zypper 安装即可：
 
-```
+```bash
 zypper install kubernetes1.23-kubeadm kubernetes1.23-kubelet kubernetes1.23-controller-manager
 ```
 
@@ -110,7 +110,7 @@ zypper install kubernetes1.23-kubeadm kubernetes1.23-kubelet kubernetes1.23-cont
 
 K8S 部署需要主机的包转发支持，所以记得开启相应的内核参数，修改 `/etc/sysctl.conf` 文件，添加下面主要的配置：
 
-```
+```conf
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
 
@@ -156,13 +156,13 @@ nodeRegistration:
         endpoint = ["registry.aliyuncs.com/google_containers"]
 ```
 
-参考来源： https://www.cnblogs.com/dudu/p/16249465.html
+参考来源： <https://www.cnblogs.com/dudu/p/16249465.html>
 
 ### Docker 配置
 
 Debian 下 Docker 的安装和配置相对来说不会太复杂，软件包方面直接 `sudo apt install docker docker-compose` 即可。相应的配置可以参考 `daemon.json` 这个文件，主要需要注意的地方有
 
-```
+```conf
 "registry-mirrors": ["https://<your-token>.mirror.aliyuncs.com"]
 ```
 
@@ -172,16 +172,16 @@ Debian 下 Docker 的安装和配置相对来说不会太复杂，软件包方�
 
 #### 针对 1.24 及以后版本
 
-Kubernetes 正式废除了针对 docker-shim 的直接支持，因此我们需要自行安装 cri 的中间层，然后再部署。使用 Github Mirantis 官方的即可，详细信息：https://github.com/Mirantis/cri-dockerd ，以及参考：
+Kubernetes 正式废除了针对 docker-shim 的直接支持，因此我们需要自行安装 cri 的中间层，然后再部署。使用 Github Mirantis 官方的即可，详细信息：<https://github.com/Mirantis/cri-dockerd> ，以及参考：
 
-- https://www.mirantis.com/blog/how-to-install-cri-dockerd-and-migrate-nodes-from-dockershim
-- https://www.mirantis.com/blog/the-future-of-dockershim-is-cri-dockerd/
+- <https://www.mirantis.com/blog/how-to-install-cri-dockerd-and-migrate-nodes-from-dockershim>
+- <https://www.mirantis.com/blog/the-future-of-dockershim-is-cri-dockerd/>
 
 根据官方的文档安装然后，查看使用 `sudo systemctl status cri-docker.service` 运行情况。
 
 如果都没有问题，尝试拉取镜像，使用命令（kubeadm 必须为 1.24 版本及以上）：
 
-```
+```bash
 kubeadm config images pull --config kubeadm-init1.24.yaml
 ```
 
@@ -191,8 +191,8 @@ kubeadm config images pull --config kubeadm-init1.24.yaml
 
 配置文件路径在 `/etc/containers/registries.conf` ，对应的内容可以参考 `registries.conf` 文件。详细参考：
 
-- https://docs.openshift.com/container-platform/3.11/crio/crio_runtime.html
-- https://github.com/containers/image/blob/master/docs/containers-registries.conf.5.md
+- <https://docs.openshift.com/container-platform/3.11/crio/crio_runtime.html>
+- <https://github.com/containers/image/blob/master/docs/containers-registries.conf.5.md>
 
 ## 初始化 Kubernetes
 
@@ -210,33 +210,33 @@ networking:
 
 然后，使用 `kubeadm init --config kubeadm-init.yaml` 开始初始化。具体预置的 config 可以使用 `kubeadm config print init-defaults` 查看。
 
-如果需要集群模式，则加上 `--upload-certs` 这个参数，具体参见： https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
+如果需要集群模式，则加上 `--upload-certs` 这个参数，具体参见： <https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/>
 
-```
+```bash
 The --upload-certs flag is used to upload the certificates that should be shared across all the control-plane instances to the cluster.
 ```
 
 所以需要加上参数：
 
-```
+```bash
 kubeadm init --upload-certs --config kubeadm-init.yaml
 ```
 
 如果无误，则会提示 nodes 上 `kubeadm join` 需要的相关信息。如果遗忘了 `kubeadm join` 命令，可以使用：
 
-```
+```bash
 kubeadm token create --print-join-command
 ```
 
 注意，如果是 1.24 的版本并且使用上述的 cri-dockerd 部署的话，需要额外的指定 cri socker 路径，如：
 
-```
+```bash
 kubeadm join <your-endpoint> --token <token> \
-	--discovery-token-ca-cert-hash <hash> \
+ --discovery-token-ca-cert-hash <hash> \
   --cri-socket unix:///var/run/cri-dockerd.sock
 ```
 
-重新获得，via https://github.com/kubernetes/kubeadm/issues/659#issuecomment-357726502 然后，就可以使用 `kubectl get nodes -A` 以及 `kubectl get pod -A -o wide` 等命令查看 K8S 控制面集群的运行状态了。
+重新获得，via <https://github.com/kubernetes/kubeadm/issues/659#issuecomment-357726502> 然后，就可以使用 `kubectl get nodes -A` 以及 `kubectl get pod -A -o wide` 等命令查看 K8S 控制面集群的运行状态了。
 
 ## 安装网络模块
 
@@ -269,35 +269,35 @@ spec:
         nodeSelector: all()
 ```
 
-更详细的信息查看官方网站： https://www.projectcalico.org/ 直接使用 `kubectl apply -f calico/custom-resources.yaml` 即可安装网络模块，然后等待一段时间后查看各个 Pods 的运行情况。
+更详细的信息查看官方网站： <https://www.projectcalico.org/> 直接使用 `kubectl apply -f calico/custom-resources.yaml` 即可安装网络模块，然后等待一段时间后查看各个 Pods 的运行情况。
 
 先查看 CoreDNS 的运行情况：
 
-```
+```bash
 for p in $(kubectl get pods --namespace=kube-system -l K8S-app=kube-dns -o name); do kubectl logs --namespace=kube-system $p; done
 ```
 
 如果没有报错，则移除 taint 以便在 kube-system 这个 namespace 上部署相关的工具 Pod 。
 
-```
+```bash
 kubectl taint nodes --all node-role.kubernetes.io/master-
 ```
 
 （1.24 版本以后，使用）
 
-```
+```bash
 kubectl taint node --all node-role.kubernetes.io/master:NoSchedule-
 ```
 
 然后测试 DNS、网络时候正常，先部署 dnsutils 这个 Pod 到 kube-system 这个 namespce：
 
-```
+```bash
 kubectl apply -f example/hello.yaml
 ```
 
 部署完成，Pod 的状态 Ready 以后，分别执行
 
-```
+```bash
 kubectl exec -it dnsutils -- cat /etc/resolv.conf
 kubectl exec -it dnsutils -- nslookup kubernetes.default
 ```
@@ -308,21 +308,21 @@ kubectl exec -it dnsutils -- nslookup kubernetes.default
 
 然后在各个 Node 上使用 kubeadm join 加入集群和部署 kubelet 相关的进程。这里有个简单的使用 nginx 测试集群的情况。
 
-```
+```bash
 kubectl apply -f examples/nginx.yaml
 ```
 
 然后使用 `port-forward` 或者使用 NodePort 的方式查看端口是否正常返回数据，以便判断运行是否正常。
 
-## 安装组件
+## 安装组件（可选）
 
 基本的集群安装好以后，可能需要安装各种的支持组件，建议以下内容根据自身的需要和具体情况去酌情考虑。
 
-### 安装 Metrics Server（可选）
+### Metrics Server
 
-具体的安装信息可以参见官网：https://github.com/kubernetes-sigs/metrics-server ，同时需要做些更改。将 Server 的启动参数修改为内部，同时不需要 https 验证：
+具体的安装信息可以参见官网：<https://github.com/kubernetes-sigs/metrics-server> ，同时需要做些更改。将 Server 的启动参数修改为内部，同时不需要 https 验证：
 
-```yamml
+```yaml
 metadata:
   labels:
     k8s-app: metrics-server
@@ -340,30 +340,30 @@ spec:
 
 首先使用 admin-role.yaml 文件生成 admin 权限的 token，`kubectl apply -f admin-role.yaml`。然后，获取 admin token，参考命令：
 
-```
+```bash
 TOKEN_NAME=$(kubectl -n kube-system get secret | grep admin-token | awk '{print $1}')
 kubectl -n kube-system get secret $TOKEN_NAME -o jsonpath={.data.token} | base64 -d
 ```
 
 安装 Dashboard，具体参见。项目中有 `dashboard.yaml` 可以供参考：
 
-https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+<https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/>
 
 接下来，使用先前生成的 `admin-role.yaml` 生成的 `token` 即可登录。
 
-### 安装 KubeSphere（可选）
+### KubeSphere
 
-KubeSphere 是国内青云推出的针对 K8s 比较易用的 Web 端，详细的可以参考其官方的安装文档 https://kubesphere.io/ 。这里主要说明的是，KubeSphere 相对安装的组件比较多，因此可能在配置不是很好的集群中，可能会影响应用的执行性能。
+KubeSphere 是国内青云推出的针对 K8s 比较易用的 Web 端，详细的可以参考其官方的安装文档 <https://kubesphere.io/> 。这里主要说明的是，KubeSphere 相对安装的组件比较多，因此可能在配置不是很好的集群中，可能会影响应用的执行性能。
 
-### 安装 MetalLB（可选）
+### MetalLB
 
 具体的文件和配置在 metallb 目录中，没有使用 Ingress 是因为需求的缘故，更需要 TCP 端口的汇聚和输出，而七层应用这块交给业务配置。
 
-### 部署 OpenELB（可选）
+### OpenELB
 
-详细可以参考文档 https://openelb.io/docs/getting-started/installation/install-openelb-on-kubernetes/ ，使用 Helm 部署方式：
+详细可以参考文档 <https://openelb.io/docs/getting-started/installation/install-openelb-on-kubernetes/> ，使用 Helm 部署方式：
 
-```
+```bash
 helm repo add test https://charts.kubesphere.io/test
 helm repo update
 helm install openelb test/openelb
@@ -389,11 +389,11 @@ spec:
 
 ## 附加信息
 
-### Install minikube
+### Minikube
 
 minikube 官方的说明都已经包含了如何使用阿里云的镜像服务（这属于文化输出了）：
 
-```
+```bash
 minikube start --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers --kubernetes-version='stable'
 ```
 
@@ -403,7 +403,7 @@ minikube start --image-repository=registry.cn-hangzhou.aliyuncs.com/google_conta
 
 一般来说，reset 能够初始化大部分的配置，同时能够尽可能的恢复原有的状态，如果使用多个 cri 那么指定下对应的 cri 参数：
 
-```
+```bash
 kubeadm reset -f --cri-socket unix:///run/containerd/containerd.sock
 ```
 
@@ -411,7 +411,7 @@ kubeadm reset -f --cri-socket unix:///run/containerd/containerd.sock
 
 主要是没有配置 criSocket 的问题，如：
 
-```
+```text
 Usage of CRI endpoints without URL scheme is deprecated and can cause kubelet errors in the future.
 Automatically prepending scheme "unix" to the "criSocket" with value "/var/run/dockershim.sock".
 Please update your configuration!
@@ -435,45 +435,45 @@ nodeRegistration:
 
 ### SIGTERM doesn't kill containerd-shims
 
-https://github.com/containerd/containerd/issues/386#issuecomment-304837687
+<https://github.com/containerd/containerd/issues/386#issuecomment-304837687>
 
 ### Calico Node 健康检查不通过
 
 如果 Node 上存在多个网卡，或者网卡的名字不标准，可以使用显式的方式指定 Calico 根据网卡地址获取地址，例如
 
-```
+```bash
 kubectl set env daemonset/calico-node -n calico-system IP_AUTODETECTION_METHOD=interface=eth0
 ```
 
 注意，这里的示例是本机的网卡端口为 eth0，你也可以指定多个，例如：
 
-```
+```bash
 kubectl set env daemonset/calico-node -n calico-system "IP_AUTODETECTION_METHOD=interface=eth.*|enp.*|bond.*|br.*"
 ```
 
-具体参见 https://projectcalico.docs.tigera.io/networking/ip-autodetection
+具体参见 <https://projectcalico.docs.tigera.io/networking/ip-autodetection>
 
 ### istio 兼容性问题
 
-<del>使用 apt 阿里云源安装的 K8S 比较新，目前为 1.18 版本，这个版本和 Istio 1.5.2 有冲突，需要等待版本更新才能正常安装。详见：https://github.com/istio/istio/issues/22215#issuecomment-599665040</del> 已解决
+<del>使用 apt 阿里云源安装的 K8S 比较新，目前为 1.18 版本，这个版本和 Istio 1.5.2 有冲突，需要等待版本更新才能正常安装。详见：<https://github.com/istio/istio/issues/22215#issuecomment-599665040></del> 已解决
 
 ### 找回 join 命令
 
 如果忘记了 join 命令，可以使用 `kubeadm token create --print-join-command` 命令加入节点。如果忘记控制面的命令，则比较麻烦一点，先重置 certificate-key：
 
-```
-$certificate-key = kubeadm init phase upload-certs --upload-certs
+```bash
+certificate-key = kubeadm init phase upload-certs --upload-certs
 
-$(kubeadm token create --print-join-command) \
+(kubeadm token create --print-join-command) \
 --control-plane \
 --certificate-key $certificate-key
 ```
 
 然后组合命令，再到节点上执行即可。注意，在某些版本下如果没有指定 cri ，那么还是会报错了，提供对应的参数即可，例如：
 
-```
+```bash
 kubeadm join <your-endpoint>:6443 --token <token> \
-	--discovery-token-ca-cert-hash <hash> \
+ --discovery-token-ca-cert-hash <hash> \
   --cri-socket unix:///var/run/cri-dockerd.sock
 ```
 
@@ -481,7 +481,7 @@ kubeadm join <your-endpoint>:6443 --token <token> \
 
 注意，如果只是 `kubectl delete node` 只会删除节点，但比不会让其他的 etcd 退出节点，因此需要在其他的 etcd 节点中手工执行删除命令，在对应的 Pod 中执行：
 
-```
+```bash
 etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key --endpoints <https://your-etcd-endpoint:2379> member list
 
 etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key --endpoints <https://your-etcd-endpoint:2379> member remove <464c2ab521decd41>
@@ -489,11 +489,11 @@ etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd
 
 ## 参考链接
 
-- https://blog.scottlowe.org/2019/08/15/reconstructing-the-join-command-for-kubeadm/
-- http://ljchen.net/2018/10/23/%E5%9F%BA%E4%BA%8E%E9%98%BF%E9%87%8C%E4%BA%91%E9%95%9C%E5%83%8F%E7%AB%99%E5%AE%89%E8%A3%85kubernetes/
-- https://github.com/kubernetes/kubernetes/issues/56038
-- https://cloud.tencent.com/developer/article/1482739
-- https://juejin.im/post/5dde7e4be51d4505f45f2495
-- https://juejin.im/post/5dde7e4be51d4505f45f2495
-- https://www.lijiaocn.com/%E9%A1%B9%E7%9B%AE/2017/04/11/calico-usage.html
-- https://kubesphere.io/
+- <https://blog.scottlowe.org/2019/08/15/reconstructing-the-join-command-for-kubeadm/>
+- <http://ljchen.net/2018/10/23/%E5%9F%BA%E4%BA%8E%E9%98%BF%E9%87%8C%E4%BA%91%E9%95%9C%E5%83%8F%E7%AB%99%E5%AE%89%E8%A3%85kubernetes/>
+- <https://github.com/kubernetes/kubernetes/issues/56038>
+- <https://cloud.tencent.com/developer/article/1482739>
+- <https://juejin.im/post/5dde7e4be51d4505f45f2495>
+- <https://juejin.im/post/5dde7e4be51d4505f45f2495>
+- <https://www.lijiaocn.com/%E9%A1%B9%E7%9B%AE/2017/04/11/calico-usage.html>
+- <https://kubesphere.io/>
